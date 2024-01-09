@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(sequence())
+  username  String    @unique
+  email     String    @unique
+  password  String
+  groups    Group[]   @relation("UserGroups")
+  messages  Message[] @relation("UserMessages")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Group {
+  id        Int       @id @default(sequence())
+  name      String
+  users     User[]    @relation("UserGroups")
+  messages  Message[] @relation("GroupMessages")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id        Int      @id @default(sequence())
+  content   String
+  userId    Int
+  user      User     @relation("UserMessages", fields: [userId], references: [id])
+  groupId   Int
+  group     Group    @relation("GroupMessages", fields: [groupId], references: [id])
+  createdAt DateTime @default(now())
+}
